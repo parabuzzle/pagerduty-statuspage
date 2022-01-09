@@ -1,0 +1,83 @@
+{# This simple template derives from ``base.html``. See ``base.html`` for
+    more information about template inheritance. #}
+ {%- extends "base.html" %}
+ 
+ {# Loads some of the macros included with Flask-Bootstrap. We are using the
+    utils module here to automatically render Flask's flashed messages in a
+    bootstrap friendly manner #}
+ {% import "bootstrap/utils.html" as utils %}
+ 
+ 
+ {# Inside the ``content`` is where you should place most of your own stuff.
+    This will keep scripts at the page end and a navbar you add on later
+    intact. #}
+ {% block content %}
+   <div class="container">
+   {%- with messages = get_flashed_messages(with_categories=True) %}
+   {%- if messages %}
+     <div class="row">
+       <div class="col-md-12">
+         {{utils.flashed_messages(messages)}}
+       </div>
+     </div>
+   {%- endif %}
+   {%- endwith %}
+   <h1>{{biz_service['name']}}</h1>
+    {{biz_service['description']}}
+    <p>
+        Owner: {{biz_service['point_of_contact']}}
+   </p>
+   <a href="/" class="btn btn-primary" style="margin-bottom: 2em;" role="button" aria-pressed="true">Back</a>
+   <div class="card" style="width: 100%;">
+    <ul class="list-group list-group-flush">
+      {% for service in services %}
+      {% set impacted = service['status'] == 'impacted' %} 
+      {% set color = 'list-group-item-danger' if impacted else 'list-group-item-success' %}
+      <li class="list-group-item {{color}}">
+        <h3>
+        {% if impacted %}
+          <span class="fas fa-exclamation-circle"></span>
+          {% else %}
+            <span class="fas fa-check-circle"></span>
+          {% endif %}
+          {{service['name']}}</h3>
+          <p style="margin-top: 2em;">
+            {% if not impacted %}
+                <a href="#" class="btn btn-danger btn-sm" role="button" aria-pressed="true">Report a Possible Problem</a>
+            {% endif %}
+          </p>
+          {% if impacted %}
+          <h4>Impacting Incident Info</h4>
+            {%for impactor in service['impactors']%}
+            <div class="card" style="width: 100%;">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <h5>{{impactor['info']['summary']}}</h5>
+                  <p>
+                    Status: {{impactor['info']['status']}}
+                  </p>
+                  {%if impactor['log']|length > 0 %}
+                  <h6>Status Updates</h6>
+                  <p>
+                    <ul>
+                      {%for log in impactor['log']%}
+                      <li>
+                        {{log['created_at']}} : {{log['message']}}
+                      </li>
+                      {%endfor%}
+                    </ul>
+                  </p>
+                  {%endif%}
+                  <a href="https://{{pd}}/incidents/{{impactor['info']['id']}}" class='btn btn-link btn-small' role="buttom">View on Pagerduty</a>
+
+                </li>
+              </ul>
+            </div>
+            {%endfor%}
+          {%endif%}
+      </li>
+      {%endfor%}
+    </ul>
+  </div>
+    </div>
+ {%- endblock %}

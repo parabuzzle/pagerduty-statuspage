@@ -1,0 +1,48 @@
+{# This simple template derives from ``base.html``. See ``base.html`` for
+    more information about template inheritance. #}
+ {%- extends "base.html" %}
+ 
+ {# Loads some of the macros included with Flask-Bootstrap. We are using the
+    utils module here to automatically render Flask's flashed messages in a
+    bootstrap friendly manner #}
+ {% import "bootstrap/utils.html" as utils %}
+ 
+ 
+ {# Inside the ``content`` is where you should place most of your own stuff.
+    This will keep scripts at the page end and a navbar you add on later
+    intact. #}
+ {% block content %}
+   <div class="container">
+   {%- with messages = get_flashed_messages(with_categories=True) %}
+   {%- if messages %}
+     <div class="row">
+       <div class="col-md-12">
+         {{utils.flashed_messages(messages)}}
+       </div>
+     </div>
+   {%- endif %}
+   {%- endwith %}
+   <div class="card" style="width: 100%;">
+    <ul class="list-group list-group-flush">
+      {% for service in services %}
+      {% set impacted = service['status'] == 'impacted' %} 
+      {% set color = 'list-group-item-danger' if impacted else 'list-group-item-success' %}
+      <li class="list-group-item {{color}}">
+        <h3>
+        {% if impacted %}
+          <span class="fas fa-exclamation-circle"></span>
+          {% else %}
+            <span class="fas fa-check-circle"></span>
+          {% endif %}
+          <a style="color: unset" href="/service/{{service['id']}}">{{service['name']}}</a></h3>
+          <p style="margin-top: 2em;">
+            {%if impacted%}
+              <a href="/service/{{service['id']}}" class="btn btn-danger btn-sm" role="button" aria-pressed="true">More Info</a>
+            {%endif%}
+          </p>
+      </li>
+      {%endfor%}
+    </ul>
+  </div>
+    </div>
+ {%- endblock %}
